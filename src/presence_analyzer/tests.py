@@ -112,6 +112,33 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
             ]
         )
 
+    def test_api_presence_start_end_404(self):
+        """
+        Test timespans for nonexistent employee.
+        """
+        resp = self.client.get('/api/v1/presence_start_end/0')
+        self.assertEqual(resp.status_code, 404)
+
+    def test_api_presence_start_end(self):
+        """
+        Test timespans when the employee is most often present in the office.
+        """
+        resp = self.client.get('/api/v1/presence_start_end/10')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content_type, 'application/json')
+        data = json.loads(resp.data)
+        self.assertEqual(len(data), 5)
+        self.assertItemsEqual(
+            data,
+            [
+                {u'start': 0.0, u'end': 0.0},
+                {u'start': 34745000.0, u'end': 64792000.0},
+                {u'start': 33592000.0, u'end': 58057000.0},
+                {u'start': 38926000.0, u'end': 62631000.0},
+                {u'start': 0.0, u'end': 0.0}
+            ]
+        )
+
 
 class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
     """
@@ -183,6 +210,26 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         }
         grouping = utils.group_by_weekday(sample_data)
         self.assertEqual(grouping, [[], [30600], [1800], [], [], [], []])
+
+    def test_get_mean_by_weekday(self):
+        """
+        Test grouping mean seconds since midnight
+        (either start or end) by weekday.
+        """
+        sample_data = {
+            datetime.date(2015, 4, 7): {
+                'start': datetime.time(9, 0, 0),
+                'end': datetime.time(17, 30, 0),
+            },
+            datetime.date(2015, 4, 8): {
+                'start': datetime.time(8, 30, 0),
+                'end': datetime.time(9, 0, 0),
+            },
+        }
+        res = utils.get_mean_by_weekday(sample_data, 'start')
+        self.assertEqual(res, [0, 32400.0, 30600.0, 0, 0, 0, 0])
+        res = utils.get_mean_by_weekday(sample_data, 'end')
+        self.assertEqual(res, [0, 63000.0, 32400.0, 0, 0, 0, 0])
 
 
 def suite():
