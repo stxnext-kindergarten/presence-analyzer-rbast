@@ -3,6 +3,9 @@ python:
   - 2.7
 install:
   - pip install pytest-cov
+  - pip install python-coveralls
   - pip install flask
 script:
-  - py.test src/presence_analyzer/tests.py
+  - py.test --cov presence_analyzer src/presence_analyzer/tests.py
+after_success:
+  - coveralls
