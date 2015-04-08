@@ -1,0 +1,8 @@
+language: python
+python:
+  - 2.7
+install:
+  - pip install pytest-cov
+  - pip install flask
+script:
+  - py.test src/presence_analyzer/tests.py
