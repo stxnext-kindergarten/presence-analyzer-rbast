@@ -1,0 +1,3 @@
+[run]
+omit = src/presence_analyzer/__init__.py
+       src/presence_analyzer/tests.py
