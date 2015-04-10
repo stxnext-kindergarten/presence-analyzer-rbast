@@ -7,7 +7,8 @@ import calendar
 from flask import redirect, abort
 
 from presence_analyzer.main import app
-from presence_analyzer.utils import jsonify, get_data, mean, group_by_weekday
+from presence_analyzer.utils import jsonify, \
+    get_data, mean, group_by_weekday, get_mean_by_weekday
 
 import logging
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
@@ -52,6 +53,29 @@ def mean_time_weekday_view(user_id):
     ]
 
     return result
+
+
+@app.route('/api/v1/presence_start_end/<int:user_id>', methods=['GET'])
+@jsonify
+def presence_start_end_view(user_id):
+    """
+    Returns timespans (in miliseconds since midnight)
+    when the employee is most often present in the office.
+    """
+    data = get_data()
+    if user_id not in data:
+        log.debug('User %s not found!', user_id)
+        abort(404)
+
+    # we multiply by 1000 because js expects miliseconds for Date()
+    start = [
+        x*1000.0 for x in get_mean_by_weekday(data[user_id], 'start')
+    ]
+    end = [
+        x*1000.0 for x in get_mean_by_weekday(data[user_id], 'end')
+    ]
+
+    return [{'start': start[i], 'end': end[i]} for i in range(5)]
 
 
 @app.route('/api/v1/presence_weekday/<int:user_id>', methods=['GET'])

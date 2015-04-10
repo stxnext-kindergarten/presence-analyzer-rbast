@@ -75,12 +75,23 @@ def group_by_weekday(items):
     """
     Groups presence entries by weekday.
     """
-    result = [[], [], [], [], [], [], []]  # one list for every day in week
+    result = [[] for i in xrange(7)]  # one list for every day in week
     for date in items:
         start = items[date]['start']
         end = items[date]['end']
         result[date.weekday()].append(interval(start, end))
     return result
+
+
+def get_mean_by_weekday(items, key):
+    """
+    Groups mean seconds since midnight (either start or end) by weekday.
+    """
+    assert key in ['start', 'end']
+    result = [[] for i in xrange(7)]  # one list for every day in week
+    for date in items:
+        result[date.weekday()].append(seconds_since_midnight(items[date][key]))
+    return [mean(day) for day in result]
 
 
 def seconds_since_midnight(time):
