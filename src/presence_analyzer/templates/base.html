@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang=en>
+<head>
+    <meta charset=utf-8>
+    <title>Presence analyzer</title>
+    <meta name="keywords" content="" />
+    <meta name="description" content=""/>
+    <meta name="author" content="STX Next sp. z o.o."/>
+    <meta name="viewport" content="width=device-width; initial-scale=1.0">
+
+    <link href="{{ url_for('static', filename='css/normalize.css') }}" media="all" rel="stylesheet" type="text/css" />
+    <link href="{{ url_for('static', filename='css/custom.css') }}" media="all" rel="stylesheet" type="text/css" />
+
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+        {% block chart %}
+        {% endblock %}
+    </script>
+    <script type="text/javascript">
+        (function($) {
+            $(document).ready(function(){
+                var loading = $('#loading');
+                $.getJSON("/api/v1/users", function(result) {
+                    var dropdown = $("#user_id");
+                    $.each(result, function(item) {
+                        dropdown.append($("<option />").val(this.user_id).text(this.name));
+                    });
+                    dropdown.show();
+                    loading.hide();
+                });
+                $('#user_id').change(function(){
+                    var selected_user = $("#user_id").val();
+                    var chart_div = $('#chart_div');
+                    if(selected_user) {
+                        loading.show();
+                        chart_div.hide();
+                        {% block js_api %}
+                        {% endblock %}
+                    }
+                });
+            });
+        })(jQuery);
+    </script>
+</head>
+
+<body>
+    <div id="main">
+        <div id="header">
+            <h1>Presence analyzer</h1>
+            {% block navigation %}
+            {% endblock %}
+        </div>
+        <div id="content">
+            <h2>{% block title %}{% endblock %}</h2>
+            <p>
+                <select id="user_id" style="display: none">
+                    <option value="">--</option>
+                </select>
+                <div id="chart_div" style="display: none">
+                </div>
+                <div id="loading">
+                    <img src="{{ url_for('static', filename='img/loading.gif') }}" />
+                </div>
+            </p>
+        </div>
+
+    </div>
+</body>
+</html>
